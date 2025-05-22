@@ -27,9 +27,10 @@ require_relative "sthread"
 require_relative "version"
 require_relative "config/settings"
 require_relative "preparser"
-require_relative "event_history"
-require_relative "thread_id"
-require_relative "tau_api"
+    require_relative "event_history"
+    require_relative "thread_id"
+    require_relative "tau_api"
+    require 'json'
 
 #require_relative "oscevent"
 #require_relative "stream"
@@ -873,6 +874,28 @@ module SonicPi
 
     def __save_buffer(id, content)
       @save_queue << [id, content]
+    end
+
+    def __generate_code_from_prompt(prompt)
+      uri = URI.parse('http://127.0.0.1:11434/api/generate')
+      req = Net::HTTP::Post.new(uri)
+      req['Content-Type'] = 'application/json'
+      req.body = MultiJson.dump({model: 'sonic-pi', prompt: prompt, stream: false})
+      res = Net::HTTP.start(uri.hostname, uri.port) {|http| http.request(req)}
+      if res.is_a?(Net::HTTPSuccess)
+        data = MultiJson.load(res.body)
+        data['response'] || ''
+      else
+        ''
+      end
+    rescue StandardError => e
+      __info "LLM request failed: #{e.message}"
+      ''
+    end
+
+    def __process_prompt(prompt)
+      code = __generate_code_from_prompt(prompt)
+      __spider_eval(code, {workspace: 'prompt'}) unless code.empty?
     end
 
     def __disable_update_checker

@@ -354,6 +354,8 @@ public:
 
     virtual bool SaveAndRunBuffer(const std::string& name, const std::string& code);
 
+    virtual bool ProcessPrompt(const std::string& prompt);
+
     virtual const APISettings& GetSettings() const;
     virtual void SetSettings(const APISettings& settings);
 

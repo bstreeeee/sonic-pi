@@ -1035,6 +1035,19 @@ bool SonicPiAPI::SaveAndRunBuffer(const std::string& name, const std::string& te
     return true;
 }
 
+bool SonicPiAPI::ProcessPrompt(const std::string& prompt)
+{
+    Message msg("/process-prompt");
+    msg.pushInt32(m_token);
+    msg.pushStr(prompt);
+    bool res = SendOSC(msg);
+    if (!res)
+    {
+        return false;
+    }
+    return true;
+}
+
 const APISettings& SonicPiAPI::GetSettings() const
 {
     return m_settings;
