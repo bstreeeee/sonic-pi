@@ -56,6 +56,11 @@ public:
     void setScopeState(QString name, bool s) { active_scopes[name] = s; }
     bool isScopeActive(QString name) { return active_scopes[name]; }
 
+    // LLM Settings
+    QString ollama_host = "127.0.0.1";
+    int ollama_port = 11434;
+    QString ollama_model = "sonic-pi";
+
     int shortcut_mode; // 1 = emacs, 2 = win, 3 = mac, 4 = user
 private:
     std::map<QString, bool> active_scopes;

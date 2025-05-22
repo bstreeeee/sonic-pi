@@ -113,6 +113,7 @@ signals:
     void logSynthsChanged();
     void clearOutputOnRunChanged();
     void autoIndentOnRunChanged();
+    void llmSettingsChanged(QString host, int port, QString model);
 
 private:
     SonicPiSettings* piSettings;
@@ -171,6 +172,9 @@ private:
     QPushButton *visit_sonic_pi_net;
     QPushButton *check_studio_hash;
     QLineEdit   *user_token;
+    QLineEdit   *ollama_host_edit;
+    QLineEdit   *ollama_port_edit;
+    QLineEdit   *ollama_model_edit;
     QLabel *update_info;
     QLabel *midi_in_ports_label;
     QLabel *midi_out_ports_label;
@@ -187,6 +191,7 @@ private:
     // TODO
     QGroupBox* createAudioPrefsTab();
     QGroupBox* createIoPrefsTab();
+    QGroupBox* createLLMPrefsTab();
     QGroupBox* createEditorPrefsTab();
     QGroupBox* createVisualizationPrefsTab();
     QGroupBox* createUpdatePrefsTab();

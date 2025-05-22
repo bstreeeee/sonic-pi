@@ -42,6 +42,9 @@ SettingsWidget::SettingsWidget(int tau_osc_cues_port, bool i18n, SonicPiSettings
     QGroupBox *ioTab = createIoPrefsTab();
     prefTabs->addTab(ioTab, tr("IO"));
 
+    QGroupBox *llmTab = createLLMPrefsTab();
+    prefTabs->addTab(llmTab, tr("LLM"));
+
     QGroupBox *editorTab = createEditorPrefsTab();
     prefTabs->addTab(editorTab, tr("Editor"));
 
@@ -273,6 +276,29 @@ QGroupBox* SettingsWidget::createIoPrefsTab() {
 
     ioTab->setLayout(io_tab_layout);
     return ioTab;
+}
+
+QGroupBox* SettingsWidget::createLLMPrefsTab() {
+    QGroupBox *llm_box = new QGroupBox();
+    llm_box->setToolTip(tr("Configure local LLM settings"));
+
+    QLabel *host_label = new QLabel(tr("Host"));
+    QLabel *port_label = new QLabel(tr("Port"));
+    QLabel *model_label = new QLabel(tr("Model"));
+
+    ollama_host_edit = new QLineEdit();
+    ollama_port_edit = new QLineEdit();
+    ollama_model_edit = new QLineEdit();
+
+    QGridLayout *layout = new QGridLayout;
+    layout->addWidget(host_label, 0, 0);
+    layout->addWidget(ollama_host_edit, 0, 1);
+    layout->addWidget(port_label, 1, 0);
+    layout->addWidget(ollama_port_edit, 1, 1);
+    layout->addWidget(model_label, 2, 0);
+    layout->addWidget(ollama_model_edit, 2, 1);
+    llm_box->setLayout(layout);
+    return llm_box;
 }
 
 /**
@@ -882,6 +908,10 @@ void SettingsWidget::updateSettings() {
     piSettings->midi_default_channel_str = channel_pat_str;
     piSettings->midi_enabled = midi_enable_check->isChecked();
 
+    piSettings->ollama_host = ollama_host_edit->text();
+    piSettings->ollama_port = ollama_port_edit->text().toInt();
+    piSettings->ollama_model = ollama_model_edit->text();
+
     piSettings->auto_indent_on_run = auto_indent_on_run->isChecked();
     piSettings->show_line_numbers = show_line_numbers->isChecked();
     piSettings->show_autocompletion = show_autocompletion->isChecked();
@@ -909,6 +939,8 @@ void SettingsWidget::updateSettings() {
     piSettings->hide_menubar_in_fullscreen = hide_menubar_in_fullscreen->isChecked();
 
     piSettings->check_updates = check_updates->isChecked();
+
+    emit llmSettingsChanged(piSettings->ollama_host, piSettings->ollama_port, piSettings->ollama_model);
 }
 
 void SettingsWidget::settingsChanged() {
@@ -969,6 +1001,9 @@ void SettingsWidget::settingsChanged() {
     check_updates->setChecked(piSettings->check_updates);
     show_autocompletion->setChecked(piSettings->show_autocompletion);
     show_context->setChecked(piSettings->show_context);
+    ollama_host_edit->setText(piSettings->ollama_host);
+    ollama_port_edit->setText(QString::number(piSettings->ollama_port));
+    ollama_model_edit->setText(piSettings->ollama_model);
     updateScopeKindVisibility();
 }
 
@@ -1044,6 +1079,10 @@ void SettingsWidget::connectAll() {
     connect(check_updates, SIGNAL(clicked()), this, SLOT(updateSettings()));
     connect(check_updates, SIGNAL(clicked()), this, SLOT(toggleCheckUpdates()));
     connect(visit_sonic_pi_net, SIGNAL(clicked()), this, SLOT(openSonicPiNet()));
+
+    connect(ollama_host_edit, SIGNAL(textChanged(QString)), this, SLOT(updateSettings()));
+    connect(ollama_port_edit, SIGNAL(textChanged(QString)), this, SLOT(updateSettings()));
+    connect(ollama_model_edit, SIGNAL(textChanged(QString)), this, SLOT(updateSettings()));
     connect(check_updates_now, SIGNAL(clicked()), this, SLOT(checkForUpdatesNow()));
 
     connect(show_autocompletion, SIGNAL(clicked()), this, SLOT(showAutoCompletion()));

@@ -151,6 +151,8 @@ private slots:
     QString asciiArtLogo();
     void printAsciiArtLogo();
     void runCode();
+    void sendPrompt();
+    void applyLLMConfig(QString host, int port, QString model);
     void update_check_updates();
     void mixerSettingsChanged();
     void check_for_updates_now();
@@ -414,6 +416,8 @@ private:
     bool is_recording;
     bool show_rec_icon_a;
     QTimer* rec_flash_timer;
+
+    QLineEdit* llm_prompt;
 
     QSplashScreen* splash;
 

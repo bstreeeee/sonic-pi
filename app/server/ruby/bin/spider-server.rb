@@ -308,6 +308,30 @@ register_api = lambda do |server|
     end
   end
 
+  server.add_method("/process-prompt") do |args|
+    incoming_token = args[0]
+    if incoming_token == token
+      prompt = args[1].force_encoding("utf-8")
+      sp.__process_prompt(prompt)
+    else
+      STDOUT.puts "Invalid token: #{incoming_token} - ignoring /process-prompt API call"
+      STDOUT.flush
+    end
+  end
+
+  server.add_method("/set-llm-config") do |args|
+    incoming_token = args[0]
+    if incoming_token == token
+      host = args[1].force_encoding("utf-8")
+      port = args[2].to_i
+      model = args[3].force_encoding("utf-8")
+      sp.__set_llm_config(host, port, model)
+    else
+      STDOUT.puts "Invalid token: #{incoming_token} - ignoring /set-llm-config API call"
+      STDOUT.flush
+    end
+  end
+
   server.add_method("/save-buffer") do |args|
     incoming_token = args[0]
     if incoming_token == token

@@ -458,6 +458,7 @@ void MainWindow::setupWindowStructure()
     connect(settingsWidget, SIGNAL(transparencyChanged(int)), this, SLOT(changeGUITransparency(int)));
 
     connect(settingsWidget, SIGNAL(checkUpdatesChanged()), this, SLOT(update_check_updates()));
+    connect(settingsWidget, SIGNAL(llmSettingsChanged(QString,int,QString)), this, SLOT(applyLLMConfig(QString,int,QString)));
     connect(settingsWidget, SIGNAL(forceCheckUpdates()), this, SLOT(check_for_updates_now()));
     connect(settingsWidget, SIGNAL(showContextChanged()), this, SLOT(changeShowContext()));
     connect(settingsWidget, SIGNAL(checkArgsChanged()), this, SLOT(changeAudioSafeMode()));
@@ -1514,6 +1515,7 @@ void MainWindow::honourPrefs()
     changeLogCues();
     changeClearOutputOnRun();
     changeAutoIndentOnRun();
+    applyLLMConfig(piSettings->ollama_host, piSettings->ollama_port, piSettings->ollama_model);
 }
 
 void MainWindow::setMessageBoxStyle()
@@ -1855,6 +1857,20 @@ void MainWindow::runCode()
     }
 
     statusBar()->showMessage(tr("Running Code..."), 1000);
+}
+
+void MainWindow::sendPrompt()
+{
+    QString text = llm_prompt->text();
+    if (!text.isEmpty())
+    {
+        m_spAPI->ProcessPrompt(text.toStdString());
+    }
+}
+
+void MainWindow::applyLLMConfig(QString host, int port, QString model)
+{
+    m_spAPI->SetLLMConfig(host.toStdString(), port, model.toStdString());
 }
 
 void MainWindow::zoomCurrentWorkspaceIn()
@@ -3454,6 +3470,11 @@ void MainWindow::createToolBar()
     toolBar->addAction(saveAsAct);
     toolBar->addAction(loadFileAct);
 
+    llm_prompt = new QLineEdit();
+    llm_prompt->setPlaceholderText(tr("LLM Prompt"));
+    toolBar->addWidget(llm_prompt);
+    connect(llm_prompt, SIGNAL(returnPressed()), this, SLOT(sendPrompt()));
+
     toolBar->addWidget(spacer);
 
     toolBar->addAction(textDecAct);
@@ -4280,6 +4301,10 @@ void MainWindow::readSettings()
     piSettings->hide_menubar_in_fullscreen = gui_settings->value("prefs/hide-menubar-in-fullscreen", false).toBool();
     QString styleName = gui_settings->value("prefs/theme", "").toString();
 
+    piSettings->ollama_host = gui_settings->value("prefs/llm-host", "127.0.0.1").toString();
+    piSettings->ollama_port = gui_settings->value("prefs/llm-port", 11434).toInt();
+    piSettings->ollama_model = gui_settings->value("prefs/llm-model", "sonic-pi").toString();
+
     piSettings->themeStyle = theme->themeNameToStyle(styleName);
     piSettings->show_autocompletion = gui_settings->value("prefs/show-autocompletion", true).toBool();
     piSettings->show_context = gui_settings->value("prefs/show-context", true).toBool();
@@ -4344,6 +4369,10 @@ void MainWindow::writeSettings()
     gui_settings->setValue("prefs/show-log", piSettings->show_log);
     gui_settings->setValue("prefs/show-context", piSettings->show_context);
     gui_settings->setValue("prefs/shortcut-mode", piSettings->shortcut_mode);
+
+    gui_settings->setValue("prefs/llm-host", piSettings->ollama_host);
+    gui_settings->setValue("prefs/llm-port", piSettings->ollama_port);
+    gui_settings->setValue("prefs/llm-model", piSettings->ollama_model);
 
     for (auto name : piSettings->scope_names)
     {
