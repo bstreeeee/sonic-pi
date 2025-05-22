@@ -1857,6 +1857,15 @@ void MainWindow::runCode()
     statusBar()->showMessage(tr("Running Code..."), 1000);
 }
 
+void MainWindow::sendPrompt()
+{
+    QString text = llm_prompt->text();
+    if (!text.isEmpty())
+    {
+        m_spAPI->ProcessPrompt(text.toStdString());
+    }
+}
+
 void MainWindow::zoomCurrentWorkspaceIn()
 {
     statusBar()->showMessage(tr("Zooming In..."), 2000);
@@ -3453,6 +3462,11 @@ void MainWindow::createToolBar()
     toolBar->addAction(recAct);
     toolBar->addAction(saveAsAct);
     toolBar->addAction(loadFileAct);
+
+    llm_prompt = new QLineEdit();
+    llm_prompt->setPlaceholderText(tr("LLM Prompt"));
+    toolBar->addWidget(llm_prompt);
+    connect(llm_prompt, SIGNAL(returnPressed()), this, SLOT(sendPrompt()));
 
     toolBar->addWidget(spacer);
 
